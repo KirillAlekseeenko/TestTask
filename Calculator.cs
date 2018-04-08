@@ -46,7 +46,7 @@ namespace TestTask_Nival
                 catch(Exception ex)
                 {
                     var message = ex.Message;
-                    if (ex is FormatException || ex is ArgumentException) // provide user with line and position info
+                    if (ex is FormatException || ex is ArgumentException || ex is InvalidOperationException) // provide user with line and position info
                     {
                         if ((reader is IXmlLineInfo xmlInfo))
                             message += string.Format(" Line {0}, position {1}", xmlInfo.LineNumber, xmlInfo.LinePosition);

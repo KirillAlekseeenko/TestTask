@@ -17,8 +17,17 @@ namespace TestTask_Nival
         {
             var watch = Stopwatch.StartNew();
 
+            if(args.Length == 0)
+            {
+                Console.WriteLine("Parameter 'directoryPath' is required");
+                return;
+            }
+
             var directoryPath = args[0];
-            DeserializeXML(directoryPath);
+            if (Directory.Exists(directoryPath))
+                DeserializeXML(directoryPath);
+            else
+                Console.WriteLine("directory was not found");
 
             watch.Stop();
             Console.WriteLine("\nThe execution time: {0}", watch.Elapsed);
@@ -41,12 +50,22 @@ namespace TestTask_Nival
                         if (pathQueue.TryDequeue(out string path))
                         {
                             Calculator calculator;
+                            var file = new StreamReader(path);
 
-                            using (var file = new StreamReader(path))
+                            try
                             {
                                 XmlSerializer serializer = new XmlSerializer(typeof(Calculator));
                                 calculator = (Calculator)serializer.Deserialize(file);
                                 calculator.Filename = Path.GetFileName(path);
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                Console.WriteLine("Critical error in {0}: {1}", Path.GetFileName(path), ex.InnerException.Message);
+                                return;
+                            }
+                            finally
+                            {
+                                file.Close();
                             }
 
                             calculators.Add(calculator);
@@ -69,9 +88,12 @@ namespace TestTask_Nival
                 Console.WriteLine("Result: {0}", result);
             }
 
-            var maxCalculationsFilename = calculators.Min().Filename;
+            var maxCalculationsFilename = calculators.Min()?.Filename;
+            if (maxCalculationsFilename == null)
+                Console.WriteLine("\n\nThere are no valid xml files");
+            else
+                Console.WriteLine("\n\nMax number of calculations in: {0}", maxCalculationsFilename);
 
-            Console.WriteLine("\n\nMax calculation file: {0}", maxCalculationsFilename);
         }
 
     }
